@@ -12,6 +12,7 @@
             </v-row>
 
             <PlantStatistics
+                class="mt-2"
                 :harvested-plants="harvestedPlants"
                 :planned-plants="plannedPlants"
                 :planted-plants="plantedPlants"
@@ -22,15 +23,7 @@
         <v-col cols="3">
             <FarmBotInfo />
 
-            <v-card v-for="event in farmBot.events" :key="event.id" class="mt-2">
-                <v-card-title
-                    class="text-h5 text-break"
-                >
-                    {{ event.name }}
-                </v-card-title>
-
-                <v-card-subtitle>{{ event.dateFormat }}</v-card-subtitle>
-            </v-card>
+            <Events class="mt-2" :events="farmBot.events" height="300" />
         </v-col>
 
         <v-col cols="4">
@@ -48,11 +41,12 @@
     import FarmBotInfo from '@/components/FarmBotInfo';
     import Plants from '@/components/Plants';
     import PlantStatistics from '@/components/PlantStatistics';
+    import Events from '@/components/Events';
 
     export default {
         name: 'Dashboard',
 
-        components: { PlantStatistics, Plants, FarmBotInfo, WeatherComponent, WeatherList },
+        components: {Events, PlantStatistics, Plants, FarmBotInfo, WeatherComponent, WeatherList },
 
         data () {
             return {

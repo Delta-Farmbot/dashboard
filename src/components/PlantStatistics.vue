@@ -1,57 +1,63 @@
 <template>
-    <v-row dense>
-        <v-col
-            cols="6"
-        >
-            <v-card>
-                <v-card-title
-                    class="text-h5"
-                    v-text="harvestedPlants.length"
-                />
+    <v-card height="0">
+        <v-card-title class="white--text orange">
+            Plant statuses
+        </v-card-title>
 
-                <v-card-subtitle>Harvested</v-card-subtitle>
-            </v-card>
-        </v-col>
+        <v-row dense>
+            <v-col
+                cols="6"
+            >
+                <v-card class="rounded-t-0">
+                    <v-card-title
+                        class="text-h5"
+                        v-text="harvestedPlants.length"
+                    />
 
-        <v-col
-            cols="6"
-        >
-            <v-card>
-                <v-card-title
-                    class="text-h5"
-                    v-text="sproutedPlants.length"
-                />
+                    <v-card-subtitle>Harvested</v-card-subtitle>
+                </v-card>
+            </v-col>
 
-                <v-card-subtitle>Sprouted</v-card-subtitle>
-            </v-card>
-        </v-col>
+            <v-col
+                cols="6"
+            >
+                <v-card class="rounded-t-0">
+                    <v-card-title
+                        class="text-h5"
+                        v-text="sproutedPlants.length"
+                    />
 
-        <v-col
-            cols="6"
-        >
-            <v-card>
-                <v-card-title
-                    class="text-h5"
-                    v-text="plantedPlants.length"
-                />
+                    <v-card-subtitle>Sprouted</v-card-subtitle>
+                </v-card>
+            </v-col>
 
-                <v-card-subtitle>Planted</v-card-subtitle>
-            </v-card>
-        </v-col>
+            <v-col
+                cols="6"
+            >
+                <v-card>
+                    <v-card-title
+                        class="text-h5"
+                        v-text="plantedPlants.length"
+                    />
 
-        <v-col
-            cols="6"
-        >
-            <v-card>
-                <v-card-title
-                    class="text-h5"
-                    v-text="plannedPlants.length"
-                />
+                    <v-card-subtitle>Planted</v-card-subtitle>
+                </v-card>
+            </v-col>
 
-                <v-card-subtitle>Planned</v-card-subtitle>
-            </v-card>
-        </v-col>
-    </v-row>
+            <v-col
+                cols="6"
+            >
+                <v-card>
+                    <v-card-title
+                        class="text-h5"
+                        v-text="plannedPlants.length"
+                    />
+
+                    <v-card-subtitle>Planned</v-card-subtitle>
+                </v-card>
+            </v-col>
+        </v-row>
+    </v-card>
 </template>
 
 <script>

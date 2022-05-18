@@ -1,5 +1,9 @@
 <template>
-    <v-card height="300">
+    <v-card height="370">
+        <v-card-title class="white--text light-blue lighten-2">
+            Weather right now
+        </v-card-title>
+
         <v-img
             class="mx-auto"
             :src="weather.icon"
