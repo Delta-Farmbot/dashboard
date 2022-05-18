@@ -3,6 +3,7 @@ module.exports = {
         'plugin:vue/recommended',
     ],
     rules: {
+        'vue/multi-word-component-names': 'off',
         'comma-dangle': ['error', 'always-multiline'],
         'indent': ['error', 4, { 'SwitchCase': 1 }],
         'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
