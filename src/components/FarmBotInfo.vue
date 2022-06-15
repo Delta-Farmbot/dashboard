@@ -1,7 +1,7 @@
 <template>
     <v-card height="623">
         <v-card-title class="white--text deep-purple">
-            Farmie's info - online
+            Farmie's info
         </v-card-title>
 
         <br>

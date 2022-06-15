@@ -8,18 +8,17 @@
             <Plants v-if="plants.length !== 0" :plants="plants" />
         </v-col>
 
-        <v-col cols="3">
+        <v-col cols="2">
             <WeatherComponent v-if="weather.current != null" :weather="weather.current" />
         </v-col>
 
-        <v-col cols="3">
+        <v-col cols="2">
             <WeatherList :weather-items="weather.hourly" />
         </v-col>
 
-        <v-col cols="3">
+        <v-col cols="2">
             <Events :events="farmBot.events" height="300" />
         </v-col>
-
 
         <v-col cols="3">
             <PlantStatistics
@@ -27,6 +26,12 @@
                 :planned-plants="plannedPlants"
                 :planted-plants="plantedPlants"
                 :sprouted-plants="sproutedPlants"
+            />
+        </v-col>
+
+        <v-col cols="3">
+            <FarmBotImages
+                :images="farmBot.images"
             />
         </v-col>
     </v-row>
@@ -42,11 +47,12 @@
     import Plants from '@/components/Plants';
     import PlantStatistics from '@/components/PlantStatistics';
     import Events from '@/components/Events';
+    import FarmBotImages from '@/components/FarmBotImages';
 
     export default {
         name: 'Dashboard',
 
-        components: { Events, PlantStatistics, Plants, FarmBotInfo, WeatherComponent, WeatherList },
+        components: {FarmBotImages, Events, PlantStatistics, Plants, FarmBotInfo, WeatherComponent, WeatherList },
 
         data () {
             return {
@@ -79,6 +85,7 @@
                     sequences: null,
                     farmEvents: null,
                     events: [],
+                    images: [],
                 },
             };
         },
@@ -110,13 +117,20 @@
             await this.fetchFarmBotPoints();
             await this.fetchFarmBotSequences();
             await this.fetchFarmBotEvents();
+            await this.fetchFarmBotImages();
 
-            setInterval(this.fetchWeather, 1000 * 60 * 10); // 10 minutes
+            const self = this;
 
             setInterval(async function () {
-                await this.fetchFarmBotPoints();
-                await this.fetchFarmBotSequences();
-                await this.fetchFarmBotEvents();
+                await self.fetchFarmBotImages();
+            }, 1000 * 60 * 60); // 1 hour
+
+            setInterval(self.fetchWeather, 1000 * 60 * 10); // 10 minutes
+
+            setInterval(async function () {
+                await self.fetchFarmBotPoints();
+                await self.fetchFarmBotSequences();
+                await self.fetchFarmBotEvents();
             }, 1000 * 60); // 1 minute
         },
 
@@ -172,6 +186,12 @@
                     this.farmBot.events.sort(function compare(a, b) {
                         return new Date(a.date) - new Date(b.date);
                     });
+                });
+            },
+
+            async fetchFarmBotImages () {
+                await axios.get(`https://my.farmbot.io/api/images`, this.config).then(async (response) => {
+                    this.farmBot.images = _.take(response.data, 100);
                 });
             },
 

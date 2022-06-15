@@ -6,7 +6,7 @@
 
         <v-row dense>
             <v-col
-                cols="6"
+                cols="12"
             >
                 <v-card class="rounded-t-0">
                     <v-card-title
@@ -19,7 +19,7 @@
             </v-col>
 
             <v-col
-                cols="6"
+                cols="12"
             >
                 <v-card class="rounded-t-0">
                     <v-card-title
@@ -32,7 +32,7 @@
             </v-col>
 
             <v-col
-                cols="6"
+                cols="12"
             >
                 <v-card>
                     <v-card-title
@@ -45,7 +45,7 @@
             </v-col>
 
             <v-col
-                cols="6"
+                cols="12"
             >
                 <v-card>
                     <v-card-title
