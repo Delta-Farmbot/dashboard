@@ -17,7 +17,7 @@
                     <br>
                     <v-img
                         class="mx-auto"
-                        :src="require(`../assets/plants/${plantType}.svg`)"
+                        :src="openfarmSlugs.includes(plantType) ? require(`../assets/plants/${plantType}.svg`) : require('../assets/plants/plant.png')"
                         width="130"
                     />
 
@@ -45,6 +45,12 @@
                 type: Array,
                 default: () => [],
             },
+        },
+
+        data() {
+            return {
+                openfarmSlugs: ['beetroot', 'carrot', 'leek', 'radish', 'spinach', 'swiss-chard'],
+            };
         },
 
         computed: {
