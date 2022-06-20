@@ -28,7 +28,7 @@
                             size="50"
                             tile
                         >
-                            <v-img :src="plantStageIcons[plantStage]" />
+                            <v-img :src="require(`../assets/plant-stages/${plantStage}.png`)" />
                         </v-avatar>
                     </div>
                 </v-card>
@@ -46,18 +46,6 @@
                 type: Object,
                 default: () => {},
             },
-        },
-
-        data () {
-            return {
-                plantStageIcons: {
-                    planned: require('@/assets/plant-stages/planned.png'),
-                    planted: require('@/assets/plant-stages/planted.png'),
-                    sprouted: require('@/assets/plant-stages/sprouted.png'),
-                    harvested: require('@/assets/plant-stages/harvested.png'),
-                    removed: require('@/assets/plant-stages/removed.png'),
-                },
-            };
         },
     };
 </script>
