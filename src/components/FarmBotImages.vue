@@ -8,8 +8,9 @@
 
         <v-carousel
             cycle
+            height="100%"
             hide-delimiters
-            interval="2000"
+            interval="4000"
             :show-arrows="false"
         >
             <v-carousel-item
@@ -17,7 +18,7 @@
                 :key="i"
                 eager
             >
-                <v-img eager height="100%" :src="item.attachment_url" />
+                <v-img eager :src="item.attachment_url" />
             </v-carousel-item>
         </v-carousel>
     </v-card>

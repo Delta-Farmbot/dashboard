@@ -6,54 +6,31 @@
 
         <v-row dense>
             <v-col
+                v-for="(items, plantStage) in plantStages"
+                :key="plantStage"
                 cols="12"
             >
-                <v-card class="rounded-t-0">
-                    <v-card-title
-                        class="text-h5"
-                        v-text="harvestedPlants.length"
-                    />
+                <v-card
+                    class="rounded-t-0"
+                >
+                    <div class="d-flex flex-no-wrap justify-space-between">
+                        <div>
+                            <v-card-title
+                                class="text-h5"
+                                v-text="items.length"
+                            />
 
-                    <v-card-subtitle>Harvested</v-card-subtitle>
-                </v-card>
-            </v-col>
+                            <v-card-subtitle v-text="_.capitalize(plantStage)" />
+                        </div>
 
-            <v-col
-                cols="12"
-            >
-                <v-card class="rounded-t-0">
-                    <v-card-title
-                        class="text-h5"
-                        v-text="sproutedPlants.length"
-                    />
-
-                    <v-card-subtitle>Sprouted</v-card-subtitle>
-                </v-card>
-            </v-col>
-
-            <v-col
-                cols="12"
-            >
-                <v-card>
-                    <v-card-title
-                        class="text-h5"
-                        v-text="plantedPlants.length"
-                    />
-
-                    <v-card-subtitle>Planted</v-card-subtitle>
-                </v-card>
-            </v-col>
-
-            <v-col
-                cols="12"
-            >
-                <v-card>
-                    <v-card-title
-                        class="text-h5"
-                        v-text="plannedPlants.length"
-                    />
-
-                    <v-card-subtitle>Planned</v-card-subtitle>
+                        <v-avatar
+                            class="ma-3"
+                            size="50"
+                            tile
+                        >
+                            <v-img :src="plantStageIcons[plantStage]" />
+                        </v-avatar>
+                    </div>
                 </v-card>
             </v-col>
         </v-row>
@@ -65,25 +42,22 @@
         name: 'PlantStatistics',
 
         props: {
-            harvestedPlants: {
-                type: Array,
-                default: () => [],
+            plantStages: {
+                type: Object,
+                default: () => {},
             },
+        },
 
-            sproutedPlants: {
-                type: Array,
-                default: () => [],
-            },
-
-            plantedPlants: {
-                type: Array,
-                default: () => [],
-            },
-
-            plannedPlants: {
-                type: Array,
-                default: () => [],
-            },
+        data () {
+            return {
+                plantStageIcons: {
+                    planned: require('@/assets/plant-stages/planned.png'),
+                    planted: require('@/assets/plant-stages/planted.png'),
+                    sprouted: require('@/assets/plant-stages/sprouted.png'),
+                    harvested: require('@/assets/plant-stages/harvested.png'),
+                    removed: require('@/assets/plant-stages/removed.png'),
+                },
+            };
         },
     };
 </script>
