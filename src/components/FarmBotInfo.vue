@@ -18,7 +18,7 @@
 
                 <br>
 
-                I water all the plants at some point in the week and take pictures of them so we can track the progress of the plants.
+                I water all the plants and take pictures of them so we can track the progress of the plants.
             </h1>
         </v-card-subtitle>
     </v-card>
