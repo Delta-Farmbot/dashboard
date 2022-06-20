@@ -83,6 +83,7 @@
                     farmEvents: null,
                     events: [],
                     images: [],
+                    imageAmount: 100,
                 },
             };
         },
@@ -201,7 +202,7 @@
 
             async fetchFarmBotImages () {
                 await axios.get(`https://my.farmbot.io/api/images`, this.config).then(async (response) => {
-                    this.farmBot.images = _.take(response.data, 100);
+                    this.farmBot.images = _.take(response.data, this.farmBot.imageAmount);
                 });
             },
 
