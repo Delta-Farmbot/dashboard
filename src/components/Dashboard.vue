@@ -104,7 +104,10 @@
             },
 
             listAmount () {
-                return Math.round(Object.keys(this.plantStages).length * 1.75);
+                let plantStageLength = Object.keys(this.plantStages).length;
+                let variableStageLength = plantStageLength > 3 ? plantStageLength : 3.5;
+
+                return Math.round(variableStageLength * 1.75);
             },
 
             weatherData () {
