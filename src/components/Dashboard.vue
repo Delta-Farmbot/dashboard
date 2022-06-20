@@ -46,7 +46,7 @@
     export default {
         name: 'Dashboard',
 
-        components: {Events, PlantStatistics, Plants, FarmBotInfo, WeatherComponent, WeatherList },
+        components: { Events, PlantStatistics, Plants, FarmBotInfo, WeatherComponent, WeatherList },
 
         data () {
             return {
@@ -69,7 +69,9 @@
                     hourly: [],
                 },
 
-                farmbotToken: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJ1bmtub3duIiwic3ViIjoxNTAwMSwiaWF0IjoxNjUwODc1MzE3LCJqdGkiOiJmNTI3ZjFkOS1kNzg1LTRhZDAtOTgwYy04ZGYwNDM2MDU4YzEiLCJpc3MiOiIvL215LmZhcm0uYm90OjQ0MyIsImV4cCI6MTY1NjA1OTMxNywibXF0dCI6ImNsZXZlci1vY3RvcHVzLnJtcS5jbG91ZGFtcXAuY29tIiwiYm90IjoiZGV2aWNlXzE1MDI4Iiwidmhvc3QiOiJ4aWNvbmZ1bSIsIm1xdHRfd3MiOiJ3c3M6Ly9jbGV2ZXItb2N0b3B1cy5ybXEuY2xvdWRhbXFwLmNvbTo0NDMvd3MvbXF0dCJ9.X_zgXVKGP-5jyfvL7lWOAHk2sEkqpMk9U0i5Gg-GXYF1u0X9g7XaE3FodZ_zpFQJebAXBufHGX7igRBANHnqAXqIpbZAcb1bbKssnjS1VC9Ero6NvilMgDkAKEAZNfS2u41oFhsZbhn3lt5S6c8OieP5bf20sJlo2T9XHteOyyjDcWJ28KlzKfYRAAP6c_0NWm4xQFZLK1R0mnxXeJwaxdkX9uh-EYCG7bPO8IhKQj9hza-oJVeKU1YzDz7yh41lKk_mVN2Ssc1eZ8JXW6z3ACqhkEPDUaiYJX2dCqQ0mka4d7l9rpiFi-ztnIDsMCw75JIwt9D74f9lCM1lANleew',
+                config: {
+                    headers: {Authorization: `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJ1bmtub3duIiwic3ViIjoxNTAwMSwiaWF0IjoxNjUwODc1MzE3LCJqdGkiOiJmNTI3ZjFkOS1kNzg1LTRhZDAtOTgwYy04ZGYwNDM2MDU4YzEiLCJpc3MiOiIvL215LmZhcm0uYm90OjQ0MyIsImV4cCI6MTY1NjA1OTMxNywibXF0dCI6ImNsZXZlci1vY3RvcHVzLnJtcS5jbG91ZGFtcXAuY29tIiwiYm90IjoiZGV2aWNlXzE1MDI4Iiwidmhvc3QiOiJ4aWNvbmZ1bSIsIm1xdHRfd3MiOiJ3c3M6Ly9jbGV2ZXItb2N0b3B1cy5ybXEuY2xvdWRhbXFwLmNvbTo0NDMvd3MvbXF0dCJ9.X_zgXVKGP-5jyfvL7lWOAHk2sEkqpMk9U0i5Gg-GXYF1u0X9g7XaE3FodZ_zpFQJebAXBufHGX7igRBANHnqAXqIpbZAcb1bbKssnjS1VC9Ero6NvilMgDkAKEAZNfS2u41oFhsZbhn3lt5S6c8OieP5bf20sJlo2T9XHteOyyjDcWJ28KlzKfYRAAP6c_0NWm4xQFZLK1R0mnxXeJwaxdkX9uh-EYCG7bPO8IhKQj9hza-oJVeKU1YzDz7yh41lKk_mVN2Ssc1eZ8JXW6z3ACqhkEPDUaiYJX2dCqQ0mka4d7l9rpiFi-ztnIDsMCw75JIwt9D74f9lCM1lANleew`},
+                },
 
                 points: [],
 
@@ -103,12 +105,19 @@
             },
         },
 
-        created() {
+        async created() {
             this.fetchWeather();
-            this.fetchFarmBotData();
+            await this.fetchFarmBotPoints();
+            await this.fetchFarmBotSequences();
+            await this.fetchFarmBotEvents();
 
             setInterval(this.fetchWeather, 1000 * 60 * 10); // 10 minutes
-            setInterval(this.fetchFarmBotData, 1000 * 60); // 1 minute
+
+            setInterval(async function () {
+                await this.fetchFarmBotPoints();
+                await this.fetchFarmBotSequences();
+                await this.fetchFarmBotEvents();
+            }, 1000 * 60); // 1 minute
         },
 
         methods: {
@@ -123,7 +132,7 @@
                 return dates;
             },
 
-            fetchWeather() {
+            fetchWeather () {
                 axios.get(`${this.weatherApiData.weatherBaseUrl}?lat=${this.weatherApiData.latitude}&lon=${this.weatherApiData.longitude}&appid=${this.weatherApiData.weatherAppKey}&units=${this.weatherApiData.units}&lang=${this.weatherApiData.lang}&exclude=${this.weatherApiData.exclude}`).then((response) => {
                     this.weatherResponse = response.data;
 
@@ -131,90 +140,28 @@
                 });
             },
 
-            fetchFarmBotData: async function () {
-                const config = {
-                    headers: {Authorization: `Bearer ${this.farmbotToken}`},
-                };
-
-                await axios.get(`https://my.farmbot.io/api/points`, config).then((response) => {
+            async fetchFarmBotPoints () {
+                console.log(this.config);
+                await axios.get(`https://my.farmbot.io/api/points`, this.config).then((response) => {
                     this.points = response.data;
                 });
+            },
 
-                await axios.get(`https://my.farmbot.io/api/sequences`, config).then((response) => {
+            async fetchFarmBotSequences () {
+                await axios.get(`https://my.farmbot.io/api/sequences`, this.config).then((response) => {
                     this.farmBot.sequences = response.data;
                 });
+            },
 
-                await axios.get(`https://my.farmbot.io/api/farm_events`, config).then(async (response) => {
+            async fetchFarmBotEvents () {
+                await axios.get(`https://my.farmbot.io/api/farm_events`, this.config).then(async (response) => {
                     this.farmBot.farmEvents = response.data;
                     this.farmBot.events = [];
 
-                    const sequences = _.filter(this.farmBot.farmEvents, {executable_type: 'Sequence'});
+                    this.parseSequences();
+                    await this.parseRegimens();
 
-                    for (let i = 0; i < sequences.length; i++) {
-                        const startTime = moment(sequences[i].start_time);
-                        const endTime = moment(sequences[i].end_time);
-
-                        if (sequences[i].time_unit === 'never') {
-                            this.farmBot.events.push({
-                                id: sequences[i].id,
-                                name: _.find(this.farmBot.sequences, {id: sequences[i].executable_id}).name,
-                                date: startTime,
-                                dateFormat: moment(startTime).format('DD-MM-YYYY HH:mm'),
-                            });
-                        } else {
-                            const timeUnit = (() => {
-                                switch(sequences[i].time_unit) {
-                                    case 'minutely': return 'minutes';
-                                    case 'hourly': return 'hours';
-                                    case 'daily': return 'days';
-                                    case 'weekly': return 'weeks';
-                                    case 'monthly': return 'months';
-                                    case 'yearly': return 'years';
-                                }
-                            })();
-
-                            const dateRange = this.dateRange(startTime, endTime, timeUnit);
-                            const filteredDates = _.filter(dateRange, function (date) {
-                                return moment(date).isSameOrAfter(moment());
-                            });
-
-                            this.farmBot.events.push({
-                                id: sequences[i].id,
-                                name: _.find(this.farmBot.sequences, {id: sequences[i].executable_id}).name,
-                                date: filteredDates[0],
-                                dateFormat: moment(filteredDates[0]).format('DD-MM-YYYY HH:mm'),
-                            });
-                        }
-                    }
-
-                    const regimens = _.filter(this.farmBot.farmEvents, {executable_type: 'Regimen'});
-
-                    for (let i = 0; i < regimens.length; i++) {
-                        const startTime = moment(regimens[i].start_time);
-
-                        await axios.get(`https://my.farmbot.io/api/regimens/${regimens[i].executable_id}`, config).then((response) => {
-                            const data = response.data;
-                            const name = data.name;
-                            let dates = [];
-
-                            for (let j = 0; j < data.regimen_items.length; j++) {
-                                const durationInSeconds = moment.duration(data.regimen_items[j].time_offset).asSeconds();
-                                const date = startTime.clone().add(durationInSeconds, 'seconds').toISOString();
-
-                                if (moment(date).isSameOrAfter(moment())) {
-                                    dates.push(date);
-                                }
-                            }
-
-                            this.farmBot.events.push({
-                                id: regimens[i].id,
-                                name: name,
-                                date: dates[0],
-                                dateFormat: moment(dates[0]).format('DD-MM-YYYY HH:mm'),
-                            });
-                        });
-                    }
-
+                    // Order the FarmBot events by date
                     this.farmBot.events.sort(function compare(a, b) {
                         return new Date(a.date) - new Date(b.date);
                     });
@@ -230,6 +177,79 @@
 
                 for (let i = 0; i < hourly.length && i < 5; i++) {
                     this.weather.hourly.push(Weather.from(hourly[i]));
+                }
+            },
+
+            parseSequences () {
+                const sequences = _.filter(this.farmBot.farmEvents, {executable_type: 'Sequence'});
+
+                for (let i = 0; i < sequences.length; i++) {
+                    const startTime = moment(sequences[i].start_time);
+                    const endTime = moment(sequences[i].end_time);
+
+                    console.log(this.farmBot.sequences);
+
+                    if (sequences[i].time_unit === 'never') {
+                        this.farmBot.events.push({
+                            id: sequences[i].id,
+                            name: _.find(this.farmBot.sequences, {id: sequences[i].executable_id}).name,
+                            date: startTime,
+                            dateFormat: moment(startTime).format('DD-MM-YYYY HH:mm'),
+                        });
+                    } else {
+                        const timeUnit = (() => {
+                            switch(sequences[i].time_unit) {
+                                case 'minutely': return 'minutes';
+                                case 'hourly': return 'hours';
+                                case 'daily': return 'days';
+                                case 'weekly': return 'weeks';
+                                case 'monthly': return 'months';
+                                case 'yearly': return 'years';
+                            }
+                        })();
+
+                        const dateRange = this.dateRange(startTime, endTime, timeUnit);
+                        const filteredDates = _.filter(dateRange, function (date) {
+                            return moment(date).isSameOrAfter(moment());
+                        });
+
+                        this.farmBot.events.push({
+                            id: sequences[i].id,
+                            name: _.find(this.farmBot.sequences, {id: sequences[i].executable_id}).name,
+                            date: filteredDates[0],
+                            dateFormat: moment(filteredDates[0]).format('DD-MM-YYYY HH:mm'),
+                        });
+                    }
+                }
+            },
+
+            async parseRegimens() {
+                const regimens = _.filter(this.farmBot.farmEvents, {executable_type: 'Regimen'});
+
+                for (let i = 0; i < regimens.length; i++) {
+                    const startTime = moment(regimens[i].start_time);
+
+                    await axios.get(`https://my.farmbot.io/api/regimens/${regimens[i].executable_id}`, this.config).then((response) => {
+                        const data = response.data;
+                        const name = data.name;
+                        let dates = [];
+
+                        for (let j = 0; j < data.regimen_items.length; j++) {
+                            const durationInSeconds = moment.duration(data.regimen_items[j].time_offset).asSeconds();
+                            const date = startTime.clone().add(durationInSeconds, 'seconds').toISOString();
+
+                            if (moment(date).isSameOrAfter(moment())) {
+                                dates.push(date);
+                            }
+                        }
+
+                        this.farmBot.events.push({
+                            id: regimens[i].id,
+                            name: name,
+                            date: dates[0],
+                            dateFormat: moment(dates[0]).format('DD-MM-YYYY HH:mm'),
+                        });
+                    });
                 }
             },
         },
