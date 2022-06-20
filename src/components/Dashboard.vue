@@ -1,18 +1,27 @@
 <template>
     <v-row class="ma-5">
-        <v-col cols="5">
-            <v-row class="text-center" dense>
-                <v-col cols="6">
-                    <WeatherComponent v-if="weather.current != null" :weather="weather.current" />
-                </v-col>
+        <v-col cols="6">
+            <FarmBotInfo />
+        </v-col>
 
-                <v-col cols="6">
-                    <WeatherList :weather-items="weather.hourly" />
-                </v-col>
-            </v-row>
+        <v-col cols="6">
+            <Plants v-if="plants.length !== 0" :plants="plants" />
+        </v-col>
 
+        <v-col cols="2">
+            <WeatherComponent v-if="weather.current != null" :weather="weather.current" />
+        </v-col>
+
+        <v-col cols="2">
+            <WeatherList :weather-items="weather.hourly" />
+        </v-col>
+
+        <v-col cols="2">
+            <Events :events="farmBot.events" height="300" />
+        </v-col>
+
+        <v-col cols="3">
             <PlantStatistics
-                class="mt-2"
                 :harvested-plants="harvestedPlants"
                 :planned-plants="plannedPlants"
                 :planted-plants="plantedPlants"
@@ -21,13 +30,9 @@
         </v-col>
 
         <v-col cols="3">
-            <FarmBotInfo />
-
-            <Events class="mt-2" :events="farmBot.events" height="300" />
-        </v-col>
-
-        <v-col cols="4">
-            <Plants v-if="plants.length !== 0" :plants="plants" />
+            <FarmBotImages
+                :images="farmBot.images"
+            />
         </v-col>
     </v-row>
 </template>
@@ -42,11 +47,12 @@
     import Plants from '@/components/Plants';
     import PlantStatistics from '@/components/PlantStatistics';
     import Events from '@/components/Events';
+    import FarmBotImages from '@/components/FarmBotImages';
 
     export default {
         name: 'Dashboard',
 
-        components: { Events, PlantStatistics, Plants, FarmBotInfo, WeatherComponent, WeatherList },
+        components: {FarmBotImages, Events, PlantStatistics, Plants, FarmBotInfo, WeatherComponent, WeatherList },
 
         data () {
             return {
@@ -79,6 +85,7 @@
                     sequences: null,
                     farmEvents: null,
                     events: [],
+                    images: [],
                 },
             };
         },
@@ -110,13 +117,20 @@
             await this.fetchFarmBotPoints();
             await this.fetchFarmBotSequences();
             await this.fetchFarmBotEvents();
+            await this.fetchFarmBotImages();
 
-            setInterval(this.fetchWeather, 1000 * 60 * 10); // 10 minutes
+            const self = this;
 
             setInterval(async function () {
-                await this.fetchFarmBotPoints();
-                await this.fetchFarmBotSequences();
-                await this.fetchFarmBotEvents();
+                await self.fetchFarmBotImages();
+            }, 1000 * 60 * 60); // 1 hour
+
+            setInterval(self.fetchWeather, 1000 * 60 * 10); // 10 minutes
+
+            setInterval(async function () {
+                await self.fetchFarmBotPoints();
+                await self.fetchFarmBotSequences();
+                await self.fetchFarmBotEvents();
             }, 1000 * 60); // 1 minute
         },
 
@@ -141,7 +155,6 @@
             },
 
             async fetchFarmBotPoints () {
-                console.log(this.config);
                 await axios.get(`https://my.farmbot.io/api/points`, this.config).then((response) => {
                     this.points = response.data;
                 });
@@ -157,14 +170,28 @@
                 await axios.get(`https://my.farmbot.io/api/farm_events`, this.config).then(async (response) => {
                     this.farmBot.farmEvents = response.data;
                     this.farmBot.events = [];
+                    var events = [];
 
-                    this.parseSequences();
-                    await this.parseRegimens();
+                    this.parseSequences(events);
+
+                    await this.parseRegimens(events);
+
+                    events = _.sortBy(events, function(dateObj) {
+                        return new Date(dateObj.date);
+                    });
+
+                    this.farmBot.events = events.slice(0, 10);
 
                     // Order the FarmBot events by date
                     this.farmBot.events.sort(function compare(a, b) {
                         return new Date(a.date) - new Date(b.date);
                     });
+                });
+            },
+
+            async fetchFarmBotImages () {
+                await axios.get(`https://my.farmbot.io/api/images`, this.config).then(async (response) => {
+                    this.farmBot.images = _.take(response.data, 100);
                 });
             },
 
@@ -175,22 +202,20 @@
 
                 this.weather.hourly = [];
 
-                for (let i = 0; i < hourly.length && i < 5; i++) {
+                for (let i = 0; i < hourly.length && i < 10; i++) {
                     this.weather.hourly.push(Weather.from(hourly[i]));
                 }
             },
 
-            parseSequences () {
+            parseSequences (events) {
                 const sequences = _.filter(this.farmBot.farmEvents, {executable_type: 'Sequence'});
 
                 for (let i = 0; i < sequences.length; i++) {
                     const startTime = moment(sequences[i].start_time);
                     const endTime = moment(sequences[i].end_time);
 
-                    console.log(this.farmBot.sequences);
-
                     if (sequences[i].time_unit === 'never') {
-                        this.farmBot.events.push({
+                        events.push({
                             id: sequences[i].id,
                             name: _.find(this.farmBot.sequences, {id: sequences[i].executable_id}).name,
                             date: startTime,
@@ -213,17 +238,19 @@
                             return moment(date).isSameOrAfter(moment());
                         });
 
-                        this.farmBot.events.push({
-                            id: sequences[i].id,
-                            name: _.find(this.farmBot.sequences, {id: sequences[i].executable_id}).name,
-                            date: filteredDates[0],
-                            dateFormat: moment(filteredDates[0]).format('DD-MM-YYYY HH:mm'),
-                        });
+                        for (let j = 0; j < filteredDates.length; j++) {
+                            events.push({
+                                id: sequences[i].id,
+                                name: _.find(this.farmBot.sequences, {id: sequences[i].executable_id}).name,
+                                date: filteredDates[j],
+                                dateFormat: moment(filteredDates[j]).format('DD-MM-YYYY HH:mm'),
+                            });
+                        }
                     }
                 }
             },
 
-            async parseRegimens() {
+            async parseRegimens(events) {
                 const regimens = _.filter(this.farmBot.farmEvents, {executable_type: 'Regimen'});
 
                 for (let i = 0; i < regimens.length; i++) {
@@ -243,14 +270,18 @@
                             }
                         }
 
-                        this.farmBot.events.push({
-                            id: regimens[i].id,
-                            name: name,
-                            date: dates[0],
-                            dateFormat: moment(dates[0]).format('DD-MM-YYYY HH:mm'),
-                        });
+                        for (let j = 0; j < dates.length; j++) {
+                            events.push({
+                                id: regimens[i].id,
+                                name: name,
+                                date: dates[j],
+                                dateFormat: moment(dates[j]).format('DD-MM-YYYY HH:mm'),
+                            });
+                        }
                     });
                 }
+
+                return this.farmBot.events;
             },
         },
     };

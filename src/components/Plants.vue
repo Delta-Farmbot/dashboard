@@ -18,15 +18,18 @@
                     <v-img
                         class="mx-auto"
                         :src="require(`../assets/plants/${plantType}.svg`)"
-                        width="80"
+                        width="130"
                     />
 
-                    <v-card-title
-                        class="text-h5"
-                        v-text="getPlantsOfType(plantType).length"
-                    />
+                    <div>
+                        <v-card-title
+                            class="text-h5 font-weight-bold"
+                            style="margin-top: -50px"
+                            v-text="getPlantsOfType(plantType).length"
+                        />
 
-                    <v-card-subtitle v-text="_.startCase(plantType)" />
+                        <v-card-subtitle style="font-size: 16px" v-text="_.startCase(plantType)" />
+                    </div>
                 </v-card>
             </v-col>
         </v-row>

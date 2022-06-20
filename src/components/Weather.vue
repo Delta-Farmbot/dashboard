@@ -12,7 +12,7 @@
 
         <v-card-title>
             <p class="mx-auto">
-                {{ _.startCase(weather.weather[0].description) }}
+                {{ _.capitalize(weather.weather[0].description) }}
             </p>
         </v-card-title>
 
