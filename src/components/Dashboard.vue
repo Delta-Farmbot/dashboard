@@ -5,27 +5,24 @@
         </v-col>
 
         <v-col cols="6">
-            <Plants v-if="plants.length !== 0" :plants="plants" />
+            <Plants v-if="plants.length !== 0" :plants="growingPlants" />
         </v-col>
 
         <v-col cols="2">
             <WeatherComponent v-if="weather.current != null" :weather="weather.current" />
         </v-col>
 
-        <v-col cols="2">
-            <WeatherList :weather-items="weather.hourly" />
+        <v-col cols="3">
+            <WeatherList :weather-items="weatherData" />
         </v-col>
 
         <v-col cols="2">
             <Events :events="farmBot.events" height="300" />
         </v-col>
 
-        <v-col cols="3">
+        <v-col cols="2">
             <PlantStatistics
-                :harvested-plants="harvestedPlants"
-                :planned-plants="plannedPlants"
-                :planted-plants="plantedPlants"
-                :sprouted-plants="sproutedPlants"
+                :plant-stages="plantStages"
             />
         </v-col>
 
@@ -95,20 +92,33 @@
                 return _.filter(this.points, {pointer_type: 'Plant'});
             },
 
-            plannedPlants () {
-                return _.filter(this.plants, {plant_stage: 'planned'});
+            growingPlants () {
+                return _.filter(this.plants, (plant) => {
+                    return plant.plant_stage === 'planted' || plant.plant_stage === 'sprouted' || plant.plant_stage === 'harvested';
+                });
             },
 
-            plantedPlants () {
-                return _.filter(this.plants, {plant_stage: 'planted'});
+            plantStages () {
+                return _.groupBy(this.plants, 'plant_stage');
             },
 
-            sproutedPlants () {
-                return _.filter(this.plants, {plant_stage: 'sprouted'});
+            listAmount () {
+                return Math.round(Object.keys(this.plantStages).length * 1.75);
             },
 
-            harvestedPlants () {
-                return _.filter(this.plants, {plant_stage: 'harvested'});
+            weatherData () {
+                const weather = [];
+
+                if(this.weatherResponse) {
+                    const hourly = this.weatherResponse.hourly;
+
+                    for (let i = 0; i < hourly.length && i < this.listAmount; i++) {
+                        weather.push(Weather.from(hourly[i]));
+                    }
+
+                }
+
+                return weather;
             },
         },
 
@@ -150,7 +160,7 @@
                 axios.get(`${this.weatherApiData.weatherBaseUrl}?lat=${this.weatherApiData.latitude}&lon=${this.weatherApiData.longitude}&appid=${this.weatherApiData.weatherAppKey}&units=${this.weatherApiData.units}&lang=${this.weatherApiData.lang}&exclude=${this.weatherApiData.exclude}`).then((response) => {
                     this.weatherResponse = response.data;
 
-                    this.parseWeatherData();
+                    this.weather.current = Weather.from(this.weatherResponse.current);
                 });
             },
 
@@ -180,7 +190,7 @@
                         return new Date(dateObj.date);
                     });
 
-                    this.farmBot.events = events.slice(0, 10);
+                    this.farmBot.events = events.slice(0, this.listAmount);
 
                     // Order the FarmBot events by date
                     this.farmBot.events.sort(function compare(a, b) {
@@ -193,18 +203,6 @@
                 await axios.get(`https://my.farmbot.io/api/images`, this.config).then(async (response) => {
                     this.farmBot.images = _.take(response.data, 100);
                 });
-            },
-
-            parseWeatherData() {
-                this.weather.current = Weather.from(this.weatherResponse.current);
-
-                const hourly = this.weatherResponse.hourly;
-
-                this.weather.hourly = [];
-
-                for (let i = 0; i < hourly.length && i < 10; i++) {
-                    this.weather.hourly.push(Weather.from(hourly[i]));
-                }
             },
 
             parseSequences (events) {
