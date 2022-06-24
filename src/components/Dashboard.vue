@@ -136,7 +136,7 @@
             const self = this;
 
             setInterval(async function () {
-                await self.fetchFarmBotImages();
+                location.reload();
             }, 1000 * 60 * 60); // 1 hour
 
             setInterval(self.fetchWeather, 1000 * 60 * 10); // 10 minutes
